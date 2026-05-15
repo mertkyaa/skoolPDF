@@ -39,7 +39,9 @@ const fileFilter = (req, file, cb) => {
         'image/gif',
         'image/tiff',
     ];
-    if (allowedMimes.includes(file.mimetype)) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.tiff'];
+    if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
         cb(null, true);
     } else {
         cb(new Error('File type not supported for current operation.'), false);
