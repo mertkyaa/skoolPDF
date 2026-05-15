@@ -25,6 +25,8 @@ function protectPdf(inputPath, outputPath, password) {
                 if (error.code === 127 || (error.message && error.message.includes('not found'))) {
                     return reject(new Error('TOOL_MISSING:qpdf'));
                 }
+                // exit code 3 = success with warnings
+                if (error.code === 3) return resolve(outputPath);
                 return reject(error);
             }
             resolve(outputPath);
