@@ -15,11 +15,3 @@ backend/uploads/*
 .env.*
 !.env.example
 
-# ── OS / editor ───────────────────────────────────────────────────────────────
-.DS_Store
-._*
-Thumbs.db
-*.log
-npm-debug.log*
-.claude/
-PROJECT_HANDOVER.md
