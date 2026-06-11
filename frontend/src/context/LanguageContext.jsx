@@ -11,7 +11,7 @@ export function LanguageProvider({ children }) {
     setLangState(code);
   };
 
-  const t = (key) => getTranslation(lang, key);
+  const t = (key, params) => getTranslation(lang, key, params);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

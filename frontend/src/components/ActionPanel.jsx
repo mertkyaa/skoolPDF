@@ -44,7 +44,7 @@ function OcrProgressBar({ progress }) {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
-      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500 italic" aria-live="polite">{label}</p>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 italic" aria-live="polite">{label}</p>
     </div>
   );
 }
@@ -78,16 +78,12 @@ function BackButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center px-4 py-2 mb-6
-                 bg-white dark:bg-slate-800
-                 border border-slate-200 dark:border-slate-700
-                 hover:border-slate-300 dark:hover:border-slate-600
-                 hover:bg-slate-50 dark:hover:bg-slate-700/60
-                 rounded-xl text-slate-600 dark:text-slate-300
-                 hover:text-slate-800 dark:hover:text-slate-100
-                 font-medium text-sm shadow-sm transition-all"
+      className="group inline-flex items-center gap-1.5 mb-8
+                 text-sm font-medium text-slate-400 dark:text-slate-500
+                 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
     >
-      <ArrowLeft size={16} className="mr-2" /> {t('back_to_files')}
+      <ArrowLeft size={15} aria-hidden="true" className="group-hover:-translate-x-0.5 transition-transform" />
+      {t('back_to_files')}
     </button>
   );
 }
@@ -219,12 +215,22 @@ export default function ActionPanel({ onBack }) {
     } finally { setIsProcessing(false); }
   };
 
-  const TITLES = { merge:'Merge Settings', split:'Extract Pages', compress:'Compression Settings', protect:'Encryption Settings', unlock:'Unlock PDF', convert:'Convert Settings', ocr:'OCR Settings', watermark:'Watermark Settings', 'to-images':'PDF to Images' };
+  const TITLES = {
+    merge:      t('ap_title_merge'),
+    split:      t('ap_title_split'),
+    compress:   t('ap_title_compress'),
+    protect:    t('ap_title_protect'),
+    unlock:     t('ap_title_unlock'),
+    convert:    t('ap_title_convert'),
+    ocr:        t('ap_title_ocr'),
+    watermark:  t('ap_title_watermark'),
+    'to-images':t('ap_title_to_images'),
+  };
   const isOcrRunning = currentTask === 'ocr' && isProcessing;
 
   /* ─── Shared label style ── */
   const labelCls = 'block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2';
-  const hintCls  = 'mt-2 text-xs text-slate-400 dark:text-slate-500 italic';
+  const hintCls  = 'mt-2 text-xs text-slate-500 dark:text-slate-400 italic';
 
   return (
     <motion.div initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} className="w-full max-w-2xl mx-auto px-4 mt-8 z-10 relative">
@@ -239,22 +245,22 @@ export default function ActionPanel({ onBack }) {
         {/* Compress */}
         {currentTask === 'compress' && (
           <div className="mb-8">
-            <label htmlFor="compress-level" className={labelCls}>Compression Level</label>
+            <label htmlFor="compress-level" className={labelCls}>{t('ap_compress_label')}</label>
             <select id="compress-level" value={compressLevel} onChange={e => setCompressLevel(e.target.value)} className={selectCls}>
-              <option value="screen">🚀 Maximum (72 dpi — smallest file, screen only)</option>
-              <option value="ebook">📖 Balanced (150 dpi — e-readers & digital sharing)</option>
-              <option value="printer">🖨️ High Quality (300 dpi — print-ready / archival)</option>
+              <option value="screen">{t('ap_compress_screen')}</option>
+              <option value="ebook">{t('ap_compress_ebook')}</option>
+              <option value="printer">{t('ap_compress_printer')}</option>
             </select>
-            <p className={hintCls}>Image quality is adjusted to your chosen level while reducing file size.</p>
+            <p className={hintCls}>{t('ap_compress_hint')}</p>
           </div>
         )}
 
         {/* Protect / Unlock */}
         {(currentTask === 'protect' || currentTask === 'unlock') && (
           <div className="mb-8">
-            <label htmlFor="pdf-password" className={labelCls}>{currentTask === 'protect' ? 'Set a password' : 'Enter password to unlock'}</label>
+            <label htmlFor="pdf-password" className={labelCls}>{currentTask === 'protect' ? t('ap_pass_protect') : t('ap_pass_unlock')}</label>
             <input id="pdf-password" type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" autoComplete={currentTask === 'protect' ? 'new-password' : 'current-password'} />
-            {currentTask === 'protect' && <p className={hintCls}>PDF files are encrypted with AES-256 via qpdf. Office files use native ECMA-376 encryption — the file format is preserved.</p>}
+            {currentTask === 'protect' && <p className={hintCls}>{t('ap_protect_hint')}</p>}
           </div>
         )}
 
@@ -262,49 +268,49 @@ export default function ActionPanel({ onBack }) {
         {currentTask === 'watermark' && (
           <div className="mb-8 flex flex-col gap-5">
             <div>
-              <label htmlFor="watermark-text" className={labelCls}>Watermark Text</label>
+              <label htmlFor="watermark-text" className={labelCls}>{t('ap_wm_text')}</label>
               <input id="watermark-text" type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} maxLength={50} className={inputCls} placeholder="e.g. CONFIDENTIAL, DRAFT, DO NOT COPY" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="watermark-size" className={labelCls}>Font Size</label>
+                <label htmlFor="watermark-size" className={labelCls}>{t('ap_wm_size')}</label>
                 <select id="watermark-size" value={watermarkSize} onChange={e => setWatermarkSize(e.target.value)} className={selectCls}>
-                  <option value="30">Small (30pt)</option>
-                  <option value="60">Medium (60pt)</option>
-                  <option value="90">Large (90pt)</option>
-                  <option value="120">Extra Large (120pt)</option>
+                  <option value="30">{t('ap_wm_size_sm')}</option>
+                  <option value="60">{t('ap_wm_size_md')}</option>
+                  <option value="90">{t('ap_wm_size_lg')}</option>
+                  <option value="120">{t('ap_wm_size_xl')}</option>
                 </select>
               </div>
               <div>
-                <label htmlFor="watermark-opacity" className={labelCls}>Opacity</label>
+                <label htmlFor="watermark-opacity" className={labelCls}>{t('ap_wm_opacity')}</label>
                 <select id="watermark-opacity" value={watermarkOpacity} onChange={e => setWatermarkOpacity(e.target.value)} className={selectCls}>
-                  <option value="0.15">Subtle (15%)</option>
-                  <option value="0.3">Light (30%)</option>
-                  <option value="0.5">Medium (50%)</option>
-                  <option value="0.75">Strong (75%)</option>
+                  <option value="0.15">{t('ap_wm_opacity_subtle')}</option>
+                  <option value="0.3">{t('ap_wm_opacity_light')}</option>
+                  <option value="0.5">{t('ap_wm_opacity_medium')}</option>
+                  <option value="0.75">{t('ap_wm_opacity_strong')}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label htmlFor="watermark-position" className={labelCls}>Position</label>
+              <label htmlFor="watermark-position" className={labelCls}>{t('ap_wm_position')}</label>
               <select id="watermark-position" value={watermarkPosition} onChange={e => setWatermarkPosition(e.target.value)} className={selectCls}>
-                <option value="diagonal">Diagonal (center)</option>
-                <option value="center">Horizontal center</option>
-                <option value="top">Top</option>
-                <option value="bottom">Bottom</option>
+                <option value="diagonal">{t('ap_wm_pos_diagonal')}</option>
+                <option value="center">{t('ap_wm_pos_center')}</option>
+                <option value="top">{t('ap_wm_pos_top')}</option>
+                <option value="bottom">{t('ap_wm_pos_bottom')}</option>
               </select>
             </div>
             <div>
-              <label htmlFor="watermark-pages" className={labelCls}>Apply to pages</label>
+              <label htmlFor="watermark-pages" className={labelCls}>{t('ap_wm_pages')}</label>
               <input
                 id="watermark-pages"
                 type="text"
                 value={watermarkPages}
                 onChange={e => setWatermarkPages(e.target.value)}
-                placeholder="e.g. 1, 3–5, 8  (leave empty for all pages)"
+                placeholder="e.g. 1, 3–5, 8"
                 className={`${inputCls} font-mono text-sm`}
               />
-              <p className={hintCls}>Leave empty to stamp all pages. Use ranges like 1–3, 5, 8–10.</p>
+              <p className={hintCls}>{t('ap_wm_pages_hint')}</p>
             </div>
           </div>
         )}
@@ -313,13 +319,13 @@ export default function ActionPanel({ onBack }) {
         {currentTask === 'convert' && (
           <div className="mb-8 flex gap-4">
             <div className="flex-1">
-              <label className={labelCls}>From</label>
+              <label className={labelCls}>{t('ap_convert_from')}</label>
               <select disabled className={`${selectCls} opacity-60 cursor-not-allowed`}>
                 <option>{files[0]?.name.split('.').pop().toUpperCase() || 'Auto-detected'}</option>
               </select>
             </div>
             <div className="flex-1">
-              <label className={labelCls}>To</label>
+              <label className={labelCls}>{t('ap_convert_to')}</label>
               <select className={selectCls}>
                 {files[0]?.name.toLowerCase().endsWith('.pdf')
                   ? <option value="docx">Word Document (.docx)</option>
@@ -332,13 +338,13 @@ export default function ActionPanel({ onBack }) {
         {/* PDF to Images */}
         {currentTask === 'to-images' && (
           <div className="mb-8">
-            <label htmlFor="image-dpi" className={labelCls}>Image Resolution (DPI)</label>
+            <label htmlFor="image-dpi" className={labelCls}>{t('ap_dpi_label')}</label>
             <select id="image-dpi" value={imageDpi} onChange={e => setImageDpi(e.target.value)} className={selectCls}>
-              <option value="72">72 dpi — Screen / preview</option>
-              <option value="150">150 dpi — Balanced (default)</option>
-              <option value="300">300 dpi — Print quality</option>
+              <option value="72">{t('ap_dpi_screen')}</option>
+              <option value="150">{t('ap_dpi_balanced')}</option>
+              <option value="300">{t('ap_dpi_print')}</option>
             </select>
-            <p className={hintCls}>Multi-page PDFs are packaged as a .zip archive. Single pages return as .png.</p>
+            <p className={hintCls}>{t('ap_dpi_hint')}</p>
           </div>
         )}
 
@@ -346,13 +352,13 @@ export default function ActionPanel({ onBack }) {
         {currentTask === 'ocr' && !isOcrRunning && (
           <div className="mb-8">
             <div className="p-4 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800 rounded-xl text-sm font-medium flex items-start">
-              <span className="mr-3 mt-0.5">💡</span>
+              <span className="mr-3 mt-0.5" aria-hidden="true">💡</span>
               <div>
-                <p>Smart OCR engine ready — optimised for lecture notes and scanned documents.</p>
+                <p>{t('ap_ocr_ready')}</p>
                 <ul className="mt-2 space-y-1 text-xs opacity-80 list-disc list-inside">
-                  <li>Auto-detects Turkish &amp; English text</li>
-                  <li>Fixes tilted &amp; rotated pages automatically</li>
-                  <li>Adds a searchable text layer without touching image quality</li>
+                  <li>{t('ap_ocr_feat1')}</li>
+                  <li>{t('ap_ocr_feat2')}</li>
+                  <li>{t('ap_ocr_feat3')}</li>
                 </ul>
               </div>
             </div>
@@ -364,8 +370,8 @@ export default function ActionPanel({ onBack }) {
         {currentTask === 'merge' && (
           <div className="mb-8">
             <div className="bg-brand-50 dark:bg-brand-900/20 p-4 rounded-xl border border-brand-100 dark:border-brand-800 flex items-start mb-6 text-brand-700 dark:text-brand-300">
-              <span className="mr-3 opacity-80 mt-0.5">💡</span>
-              <span className="font-medium">Files will be merged in order. Optionally select specific pages from each file to include only those in the output.</span>
+              <span className="mr-3 opacity-80 mt-0.5" aria-hidden="true">💡</span>
+              <span className="font-medium">{t('ap_merge_info')}</span>
             </div>
             <div className="flex flex-col gap-6">
               {files.map((f, i) => (
@@ -398,11 +404,11 @@ export default function ActionPanel({ onBack }) {
                      transition-all shadow-xl shadow-brand-500/25"
         >
           {isProcessing ? (
-            <><Loader2 size={22} className="animate-spin mr-2"/>{currentTask === 'ocr' ? t('ocr_running') : t('processing')}</>
+            <><Loader2 size={22} aria-hidden="true" className="animate-spin mr-2"/>{currentTask === 'ocr' ? t('ocr_running') : t('processing')}</>
           ) : success ? (
-            <><CheckCircle size={22} className="mr-2"/>{t('done')}</>
+            <><CheckCircle size={22} aria-hidden="true" className="mr-2"/>{t('done')}</>
           ) : (
-            <><FileUp size={22} className="mr-2"/>{t('process_btn')}</>
+            <><FileUp size={22} aria-hidden="true" className="mr-2"/>{t('process_btn')}</>
           )}
         </button>
 

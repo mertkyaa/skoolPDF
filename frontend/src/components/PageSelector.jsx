@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import { useLang } from '../context/LanguageContext';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -32,6 +33,7 @@ function pagesToRangeStr(pages) {
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 export default function PageSelector({ file, selectedPages, onSelectionChange }) {
+  const { t } = useLang();
   const [pdfDoc, setPdfDoc]       = useState(null);
   const [pages, setPages]         = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -101,8 +103,8 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
   if (loading) return (
     <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center">
       <div className="animate-spin w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full mb-4" />
-      <p className="font-medium text-lg">Loading pages...</p>
-      <p className="text-sm mt-1 opacity-60">Please wait</p>
+      <p className="font-medium text-lg">{t('ps_loading')}</p>
+      <p className="text-sm mt-1 opacity-60">{t('ps_loading_wait')}</p>
     </div>
   );
 
@@ -110,9 +112,9 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
     <div className="mb-8">
       {/* Header row */}
       <div className="flex items-center justify-between mb-3 gap-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-          Select pages to include
-          <span className="ml-2 text-xs font-normal text-slate-400 dark:text-slate-500">({pages.length} total)</span>
+        <label htmlFor="page-range-input" className="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
+          {t('ps_select_label')}
+          <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">{t('ps_total_count', { n: pages.length })}</span>
         </label>
         <button
           onClick={toggleAll}
@@ -121,7 +123,7 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
                      rounded-lg transition-colors shrink-0 min-h-[44px] touch-manipulation
                      focus-visible:outline-2 focus-visible:outline-brand-500"
         >
-          {selectedPages.length === pages.length ? 'Deselect All' : 'Select All'}
+          {selectedPages.length === pages.length ? t('ps_deselect_all') : t('ps_select_all')}
         </button>
       </div>
 
@@ -129,6 +131,7 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
       <div className="mb-3">
         <div className="relative">
           <input
+            id="page-range-input"
             type="text"
             value={inputVal}
             onChange={handleInputChange}
@@ -148,12 +151,12 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
           />
           {inputError && (
             <p className="mt-1 text-xs text-red-500 dark:text-red-400">
-              Invalid page range. Use format: 1, 3–5, 8
+              {t('ps_invalid_range')}
             </p>
           )}
         </div>
-        <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500 italic">
-          Type page numbers or ranges, then press Enter — or click thumbnails below.
+        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 italic">
+          {t('ps_range_hint')}
         </p>
       </div>
 
@@ -162,20 +165,20 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
                       bg-slate-50 dark:bg-slate-800/50 shadow-inner rounded-xl
                       border border-slate-200 dark:border-slate-700 overscroll-contain">
         {pages.map(p => (
-          <Thumbnail key={p} pdfDoc={pdfDoc} pageNum={p} isSelected={selectedPages.includes(p)} onToggle={() => toggle(p)} />
+          <Thumbnail key={p} pdfDoc={pdfDoc} pageNum={p} isSelected={selectedPages.includes(p)} onToggle={() => toggle(p)} pageLabel={t('ps_page')} />
         ))}
       </div>
 
       <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium">
         {selectedPages.length > 0
-          ? `${selectedPages.length} of ${pages.length} pages selected`
-          : 'No pages selected — all pages will be included'}
+          ? t('ps_selected_count', { selected: selectedPages.length, total: pages.length })
+          : t('ps_none_selected')}
       </p>
     </div>
   );
 }
 
-function Thumbnail({ pdfDoc, pageNum, isSelected, onToggle }) {
+function Thumbnail({ pdfDoc, pageNum, isSelected, onToggle, pageLabel }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -206,7 +209,7 @@ function Thumbnail({ pdfDoc, pageNum, isSelected, onToggle }) {
       role="checkbox"
       tabIndex={0}
       aria-checked={isSelected}
-      aria-label={`Page ${pageNum}`}
+      aria-label={`${pageLabel} ${pageNum}`}
       className={`relative cursor-pointer transition-all duration-200 rounded-xl overflow-hidden
                   bg-white dark:bg-slate-700 touch-manipulation select-none
                   focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2

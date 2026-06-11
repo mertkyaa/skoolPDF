@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, File, X, ArrowLeft, Send } from 'lucide-react';
 import { useTask } from '../context/TaskContext';
+import { useLang } from '../context/LanguageContext';
 import CustomPdfPreview from './CustomPdfPreview';
 
 function formatSize(bytes) {
@@ -18,6 +19,7 @@ const PDF_ONLY   = 'application/pdf';
 
 export default function DropZone({ onContinue }) {
   const { currentTask, setCurrentTask, files, setFiles } = useTask();
+  const { t } = useLang();
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
@@ -52,16 +54,16 @@ export default function DropZone({ onContinue }) {
 
   const getTaskInfo = () => {
     switch (currentTask) {
-      case 'merge':     return { title:'Merge PDFs',            desc:'Upload the PDFs you want to combine.',                                                 accept:PDF_ONLY };
-      case 'split':     return { title:'Extract Pages',         desc:'Upload the PDF you want to split.',                                                    accept:PDF_ONLY };
-      case 'compress':  return { title:'Compress PDF',          desc:'Upload a PDF to optimise its file size.',                                              accept:PDF_ONLY };
-      case 'ocr':       return { title:'OCR — Make Searchable', desc:'Upload a scanned PDF to extract its text layer.',                                      accept:PDF_ONLY };
-      case 'protect':   return { title:'Add Password',          desc:'Upload a PDF or Office file (Word, Excel, PowerPoint) to encrypt with native AES-256.', accept:PDF_AND_OFFICE };
-      case 'unlock':    return { title:'Unlock PDF',            desc:'Upload a password-protected PDF to remove its lock.',                                  accept:PDF_ONLY };
-      case 'watermark': return { title:'Add Watermark',         desc:'Upload a PDF to stamp custom text on every page.',                                     accept:PDF_ONLY };
-      case 'convert':   return { title:'Universal Converter',   desc:'Upload a PDF, Word, Excel, PowerPoint or image file.',                                 accept:`${ALL_DOCS},${ALL_IMAGES}` };
-      case 'to-images': return { title:'PDF to Images',         desc:'Upload a PDF — each page will be exported as a PNG image.',                            accept:PDF_ONLY };
-      default:          return { title:'Upload',                desc:'',                                                                                     accept:'*' };
+      case 'merge':     return { title: t('dz_merge_title'),     desc: t('dz_merge_desc'),     accept: PDF_ONLY };
+      case 'split':     return { title: t('dz_split_title'),     desc: t('dz_split_desc'),     accept: PDF_ONLY };
+      case 'compress':  return { title: t('dz_compress_title'),  desc: t('dz_compress_desc'),  accept: PDF_ONLY };
+      case 'ocr':       return { title: t('dz_ocr_title'),       desc: t('dz_ocr_desc'),       accept: PDF_ONLY };
+      case 'protect':   return { title: t('dz_protect_title'),   desc: t('dz_protect_desc'),   accept: PDF_AND_OFFICE };
+      case 'unlock':    return { title: t('dz_unlock_title'),    desc: t('dz_unlock_desc'),    accept: PDF_ONLY };
+      case 'watermark': return { title: t('dz_watermark_title'), desc: t('dz_watermark_desc'), accept: PDF_ONLY };
+      case 'convert':   return { title: t('dz_convert_title'),   desc: t('dz_convert_desc'),   accept: `${ALL_DOCS},${ALL_IMAGES}` };
+      case 'to-images': return { title: t('dz_to_images_title'), desc: t('dz_to_images_desc'), accept: PDF_ONLY };
+      default:          return { title: 'Upload',                desc: '',                     accept: '*' };
     }
   };
 
@@ -78,16 +80,12 @@ export default function DropZone({ onContinue }) {
       {/* Back button */}
       <button
         onClick={() => { setCurrentTask('none'); setFiles([]); }}
-        className="inline-flex items-center px-4 py-2 mb-6
-                   bg-white dark:bg-slate-800
-                   border border-slate-200 dark:border-slate-700
-                   hover:border-slate-300 dark:hover:border-slate-600
-                   hover:bg-slate-50 dark:hover:bg-slate-700/60
-                   rounded-xl text-slate-600 dark:text-slate-300
-                   hover:text-slate-800 dark:hover:text-slate-100
-                   font-medium text-sm shadow-sm transition-all"
+        className="group inline-flex items-center gap-1.5 mb-8
+                   text-sm font-medium text-slate-400 dark:text-slate-500
+                   hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
       >
-        <ArrowLeft size={16} className="mr-2" /> Back to tools
+        <ArrowLeft size={15} aria-hidden="true" className="group-hover:-translate-x-0.5 transition-transform" />
+        {t('back_to_tools')}
       </button>
 
       <div className="bg-white dark:bg-slate-800/80 rounded-3xl
@@ -100,6 +98,9 @@ export default function DropZone({ onContinue }) {
 
         {/* Drop area */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-label={t('dz_upload_aria')}
           className={`border-2 border-dashed rounded-2xl p-12 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer
             ${isDragging
               ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/20'
@@ -108,32 +109,33 @@ export default function DropZone({ onContinue }) {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => document.getElementById('fileUpload').click()}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('fileUpload').click(); } }}
         >
-          <input type="file" id="fileUpload" className="hidden"
+          <input type="file" id="fileUpload" aria-label="Upload files" className="hidden"
             multiple={currentTask === 'merge'} accept={info.accept}
             onChange={e => e.target.files?.length > 0 && addFiles(Array.from(e.target.files))} />
           <div className="w-20 h-20 bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center mb-6 shadow-sm border border-brand-200 dark:border-brand-800">
-            <UploadCloud size={32} />
+            <UploadCloud size={32} aria-hidden="true" />
           </div>
-          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">Drag & drop your files here</h3>
-          <p className="text-slate-400 dark:text-slate-500">or click to browse from your computer</p>
+          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">{t('dz_drag_drop')}</h3>
+          <p className="text-slate-500 dark:text-slate-400">{t('dz_browse_computer')}</p>
         </div>
 
         {/* File list */}
         {files.length > 0 && (
           <div className="mt-8">
             <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center justify-between">
-              <span>Selected files ({files.length})</span>
+              <span>{t('dz_selected_files')} ({files.length})</span>
               {canMerge && (
                 <button onClick={onContinue}
                   className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md flex items-center transition-colors">
-                  Continue to Merge <Send size={16} className="ml-2"/>
+                  {t('dz_continue_merge')} <Send size={16} aria-hidden="true" className="ml-2"/>
                 </button>
               )}
               {canSingle && (
                 <button onClick={onContinue}
                   className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md flex items-center transition-colors">
-                  Continue <Send size={16} className="ml-2"/>
+                  {t('dz_continue')} <Send size={16} aria-hidden="true" className="ml-2"/>
                 </button>
               )}
             </h4>
@@ -147,18 +149,20 @@ export default function DropZone({ onContinue }) {
                         <File size={22} className="text-brand-500 dark:text-brand-400 shrink-0"/>
                         <div className="min-w-0">
                           <p className="truncate text-slate-700 dark:text-slate-200 font-medium">{f.name}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatSize(f.size)}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{formatSize(f.size)}</p>
                         </div>
                       </div>
-                      <button onClick={e => { e.stopPropagation(); removeFile(i); }}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                        <X size={18}/>
+                      <button
+                        onClick={e => { e.stopPropagation(); removeFile(i); }}
+                        aria-label={`Remove ${f.name}`}
+                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                        <X size={18} aria-hidden="true"/>
                       </button>
                     </div>
                     {(f.type === 'application/pdf' || f.type.startsWith('image/')) && (
                       <div className="w-full bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden shadow-inner mt-2">
                         {f.type.startsWith('image/') ? (
-                          <img src={URL.createObjectURL(f)} alt="preview" className="w-full max-h-[400px] object-contain bg-slate-100 dark:bg-slate-700"/>
+                          <img src={URL.createObjectURL(f)} alt={f.name} className="w-full max-h-[400px] object-contain bg-slate-100 dark:bg-slate-700"/>
                         ) : (
                           <CustomPdfPreview file={f}/>
                         )}
